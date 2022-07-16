@@ -1,5 +1,6 @@
 # Bitcoin
 
+This project completely belongs to RajputGarima, I am just using this for understanding. 
 
 Implemented a bitcoin system with 'n' number of nodes where 'n' is adjustable. There are 'n' independent threads in the system and the network between these nodes is assumed to be fully connected. A node can perform any number of transactions and the node that wins in the **proof-of-work** and satisfies **consensus requirements** finally gets to create a block which is added to the immutable block chain. <br />
 
@@ -7,10 +8,17 @@ To maintain integrity of the blocks, **Merkle tree** of all the transactions pre
 
 Each node is given 5 wallets i.e. 5 pairs of *<publicKey, privateKey>* to give **Multi-Transaction support.** 
 
-
 There is a config file *(config.py)* that allows adjusting the hyper-parameters of the Blockchain like number of nodes in the network, arity of Merkle tree, Nonce size, Hash size etc. <br />
 
+For Python 3.10 - <br/>
+
+> pip install pycryptodome
+
+> pip install prettytable
+
+<br/>
 To run the code, type - <br />
+
 > python3 Node.py
 
 It prints out the log of transactions starting from the initial state of each node. All the transactions along with the state of all the nodes is printed upon addition of a new block to the blockchain. <br />
@@ -19,4 +27,7 @@ The code runs infinitely as a bitcoin system is supposed to do. Random transacti
 
 
 
-Refer to REPORT.pdf for detailed implementation.
+Refer to REPORT.pdf for detailed implementation based analysis. 
+Meanwhile one can also refer to the Bitcoin base paper. Where it all starter :)
+
+
