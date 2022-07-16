@@ -31,6 +31,6 @@ The code runs infinitely as a bitcoin system is supposed to do. Random transacti
 
 
 Refer to REPORT.pdf for detailed implementation based analysis. 
-Meanwhile one can also refer to the Bitcoin base paper. Where it all starter :)
+Meanwhile one can also refer to the Bitcoin base paper. Where it all started :)
 
 
