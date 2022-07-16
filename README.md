@@ -1,6 +1,6 @@
 # Bitcoin
 
-This project if forked from [RajputGarima/Bitcoin](https://github.com/RajputGarima/Bitcoin), I am just using this for my understanding. <br/>
+This project if forked from [RajputGarima/Bitcoin](https://github.com/RajputGarima/Bitcoin), I am just using this to understand how bitcoin work. <br/>
 
 Implemented a bitcoin system with 'n' number of nodes where 'n' is adjustable. There are 'n' independent threads in the system and the network between these nodes is assumed to be fully connected. A node can perform any number of transactions and the node that wins in the **proof-of-work** and satisfies **consensus requirements** finally gets to create a block which is added to the immutable block chain. <br />
 
