@@ -1,7 +1,8 @@
 # Bitcoin
 
-This project is forked from [RajputGarima/Bitcoin](https://github.com/RajputGarima/Bitcoin), I am just using this to understand how bitcoin work. <br/>
+This work is forked from [RajputGarima/Bitcoin](https://github.com/RajputGarima/Bitcoin), I am just using this to understand how bitcoin work. <br/>
 
+---
 Implementation of bitcoin system with 'n' number of nodes where 'n' is adjustable. There are 'n' independent threads in the system and the network between these nodes is assumed to be fully connected. A node can perform any number of transactions and the node that wins in the **proof-of-work** and satisfies **consensus requirements** finally gets to create a block which is added to the immutable block chain. <br />
 
 To maintain integrity of the blocks, **Merkle tree** of all the transactions present in the block is created. The tree stores hash pointers at each level. A block also stores hash pointer of the previous block in the chain. This ensures any tampering with a transaction or a block leads to disturbance in the hash values along the complete chain which can not go undetected. <br />
