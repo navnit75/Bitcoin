@@ -1,13 +1,13 @@
+import sys
+
 from config import *
 from HashAlgo import *
-
-import sys
 
 
 class Block:
     def __init__(self, prevBlockPtr, root, nonce, transactionList):
         self.prevBlockPtr = prevBlockPtr
-        if(prevBlockPtr):
+        if prevBlockPtr:
             self.prevBlockHash = prevBlockPtr.hashVal
         else:
             self.prevBlockHash = ""
@@ -18,7 +18,12 @@ class Block:
 
         allHash = ""
         # allHash += root.hashVal + self.prevBlockHash + str(nonce) + str(self.noOfTxn)
-        allHash += self.prevBlockHash + str(nonce) + str(self.noOfTxn) + self.merkleTreeRoot.hashVal
+        allHash += (
+            self.prevBlockHash
+            + str(nonce)
+            + str(self.noOfTxn)
+            + self.merkleTreeRoot.hashVal
+        )
         self.hashVal = generateHash(allHash)
 
     def get_size(self):
@@ -30,13 +35,11 @@ class Block:
             totalSize += txn.get_size()
         noOfNodesinMerkleTree = 15
         n = 15
-        while(n>1):
-            noOfNodesinMerkleTree += (n + arity - 1)//arity
-            n = (n+ arity - 1)//arity
+        while n > 1:
+            noOfNodesinMerkleTree += (n + arity - 1) // arity
+            n = (n + arity - 1) // arity
         totalSize += noOfNodesinMerkleTree * sys.getsizeof(self.merkleTreeRoot.hashVal)
         return totalSize
-
-
 
 
 # b = None

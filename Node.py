@@ -5,13 +5,13 @@ import time
 from random import random, randrange
 
 from Crypto.PublicKey import RSA
+from prettytable import PrettyTable
 
 from Block import *
 from Blockchain import *
 from config import *
 from MerkleTree import MerkleTree
 from Transaction import *
-from prettytable import PrettyTable
 
 
 class Node:
@@ -30,14 +30,14 @@ class Node:
         self.blockchain = BlockChain()
         for i in range(5):
             key = RSA.generate(2048)
-            self.pubKey.append(key.publickey().exportKey('PEM'))
-            self.pvtKey.append(key.exportKey('PEM'))
+            self.pubKey.append(key.publickey().exportKey("PEM"))
+            self.pvtKey.append(key.exportKey("PEM"))
             pubKeyHash = SHA256.new(hashlib.sha256(self.pubKey[i]).hexdigest().encode())
-            Node.publickeyMap[pubKeyHash.hexdigest()] = str(self.id) +  " . " + str(i)
+            Node.publickeyMap[pubKeyHash.hexdigest()] = str(self.id) + " . " + str(i)
 
         self.transactions = []
         self.blockqueue = []
-        self.target = None
+        self.target = None  # This is Node's Hash Value
         self.incentive = 0
         self.bitcoins = 0
         self.start = 0
@@ -45,52 +45,78 @@ class Node:
         self.utxo = {}
 
     def getWalletAddress(self):
-        keyno = randrange(0,5)
+        keyno = randrange(0, 5)
         pubKey = self.pubKey[keyno]
         keyhash = SHA256.new(hashlib.sha256(pubKey).hexdigest().encode())
         return keyhash
 
+    # This is where the Node Run time begin's
+    # Maybe this is not such a great idea to keep the run time here but lets see
     def run(self):
-        self.start = time.time()
-        while(True):
+        self.start = time.time()  # Records the start time
+
+        while True:
             end = time.time()
-            if(end - self.start > 15):
-                if(len(self.transactions) > 0):
+
+            if end - self.start > 15:  # Waits for 15 unit of time
+                if len(self.transactions) > 0:
+                    # Again records the time
                     timer = time.time()
                     blk = self.createBlock()
                     self.target = blk.hashVal
+
+                    # Get the proof of work from this node
+                    # 1. The node with the least target value wins
+                    # 2. In case of the two nodes having same target value, the node with least id wins
                     pow = self.proofOfWork()
+
+                    # If the current node wins the POW
                     if pow:
                         Node.txnFlag = False
-
                         flag = True
-                        for node in self.allNodes:
+
+                        # This is redundant, all nodes check the same txns
+                        for node in Node.allNodes:
                             if node.getConsensus(blk) == False:
                                 flag = False
                                 break
 
                         if flag:
-                            print("---------------------- Transactions Performed --------------------------")
+                            print(
+                                "---------------------- Transactions Performed --------------------------"
+                            )
                             print(Node.txns_performed)
                             Node.txns_performed.clear_rows()
 
-                            print(" -------------------------------------------------------------------------- ")
+                            print(
+                                " -------------------------------------------------------------------------- "
+                            )
                             for node in self.allNodes:
                                 node.processBlocks(blk)
-                            print("--------After Performing the Transaction final state of the Nodes---------")
+                            print(
+                                "--------After Performing the Transaction final state of the Nodes---------"
+                            )
                             self.printUTXO()
 
-                            print("------------------------ Transactions Executed----------------------------")
+                            print(
+                                "------------------------ Transactions Executed----------------------------"
+                            )
                             self.printTxn(blk.txnList)
 
-                            print(" -------------------------------------------------------------------------- ")
-                            
+                            print(
+                                " -------------------------------------------------------------------------- "
+                            )
+
                             Node.txnFlag = True
                             Node.txnnodes = []
                             self.incentive += incentive
-                            randkeyno = randrange(0,5)
-                            recverpubkeyHash = SHA256.new(hashlib.sha256(self.pubKey[randkeyno]).hexdigest().encode())
-                            txn = Transaction([],[],incentive,recverpubkeyHash,True)
+                            randkeyno = randrange(0, 5)
+                            recverpubkeyHash = SHA256.new(
+                                hashlib.sha256(self.pubKey[randkeyno])
+                                .hexdigest()
+                                .encode()
+                            )
+                            txn = Transaction([], [], incentive, recverpubkeyHash, True)
                             for node in self.allNodes:
                                 node.processTransactions(txn)
                         else:
@@ -100,13 +126,12 @@ class Node:
                     else:
                         self.start = time.time()
 
-
             dotxn = random()
 
-            if(dotxn <= 0.2 and Node.txnFlag and self.id not in Node.txnnodes):
-                recvr = randrange(0,numberOfNodes)
-                while(str(recvr) == str(self.id)):
-                    recvr = randrange(0,numberOfNodes)
+            if dotxn <= 0.2 and Node.txnFlag and self.id not in Node.txnnodes:
+                recvr = randrange(0, numberOfNodes)
+                while str(recvr) == str(self.id):
+                    recvr = randrange(0, numberOfNodes)
                 recvrnode = self.allNodes[recvr]
                 recvrkeyhash = recvrnode.getWalletAddress()
                 prev_txn = []
@@ -116,10 +141,14 @@ class Node:
                     pvtkey = self.pvtKey[j]
 
                     try:
-                        sendrpubkeyhash =  SHA256.new(hashlib.sha256(pkey).hexdigest().encode())
+                        sendrpubkeyhash = SHA256.new(
+                            hashlib.sha256(pkey).hexdigest().encode()
+                        )
                         txn_l = self.utxo[sendrpubkeyhash.hexdigest()]
                         for t in txn_l:
-                            sendrPubKeyHash =  SHA256.new(hashlib.sha256(pkey).hexdigest().encode())
+                            sendrPubKeyHash = SHA256.new(
+                                hashlib.sha256(pkey).hexdigest().encode()
+                            )
                             sendrPubKeyHash.update(t[0].hashVal.encode())
                             signer = PKCS115_SigScheme(RSA.importKey(pvtkey))
                             sendersignature = signer.sign(sendrPubKeyHash)
@@ -127,13 +156,18 @@ class Node:
                             scriptsign.append(ScriptSign(sendersignature, pkey))
                     except KeyError:
                         continue
-                bitcoinval = randrange(10,201)
+                bitcoinval = randrange(10, 201)
                 tempReceiver = recvrkeyhash.hexdigest()
-                new_txn = Transaction(prev_txn,scriptsign,bitcoinval,recvrkeyhash)
-                Node.txns_performed.add_row([self.id, Node.publickeyMap[tempReceiver], bitcoinval, new_txn.validTxn] )
-                
+                new_txn = Transaction(prev_txn, scriptsign, bitcoinval, recvrkeyhash)
+                Node.txns_performed.add_row(
+                    [
+                        self.id,
+                        Node.publickeyMap[tempReceiver],
+                        bitcoinval,
+                        new_txn.validTxn,
+                    ]
+                )
 
-                
                 if new_txn.validTxn:
                     Node.txnnodes.append(self.id)
                 for node in self.allNodes:
@@ -143,12 +177,15 @@ class Node:
     def getConsensus(self, block):
         if self.blockchain.latestBlock != block.prevBlockPtr:
             return False
+
+        # Check each transaction in block's transaction
         for txn in block.txnList:
             if txn.validTxn == False:
                 return False
+
             for inp in txn.input:
                 sign = inp[1].pubKey
-                signHash =  SHA256.new(hashlib.sha256(sign).hexdigest().encode())
+                signHash = SHA256.new(hashlib.sha256(sign).hexdigest().encode())
                 txn = inp[0]
                 try:
                     if txn not in self.utxo[signHash.hexdigest()]:
@@ -159,14 +196,14 @@ class Node:
         return True
 
     def generateNonce(self):
-        return randrange(0,2**sizeOfNonce)
+        return randrange(0, 2**sizeOfNonce)
 
     def processTransactions(self, txn):
-        if(txn.validTxn):
+        if txn.validTxn:
             self.transactions.append(txn)
 
-    def processBlocks(self,blck):
-        if(self.blockchain.rootBlock == None):
+    def processBlocks(self, blck):
+        if self.blockchain.rootBlock == None:
             self.blockchain.rootBlock = blck
 
         self.blockchain.latestBlock = blck
@@ -183,7 +220,7 @@ class Node:
             for x in txns.output:
                 scriptpubKey = x[1].recvrkeyHash
                 try:
-                    temputxo[scriptpubKey].append((txns,index))
+                    temputxo[scriptpubKey].append((txns, index))
                 except KeyError:
                     temputxo[scriptpubKey] = [(txns, index)]
                 index += 1
@@ -204,87 +241,115 @@ class Node:
     def createGenesisBlock(self):
         bitcoinvalue = 1000
         for _ in range(numberOfNodes):
-            randomNo = randrange(0,numberOfNodes)
-            randkeyno = randrange(0,5)
+            randomNo = randrange(0, numberOfNodes)
+            randkeyno = randrange(0, 5)
             node = self.allNodes[randomNo]
-            recverpubkeyHash = SHA256.new(hashlib.sha256(node.pubKey[randkeyno]).hexdigest().encode())
-            t1 = Transaction([],[],bitcoinvalue,recverpubkeyHash,True)
+            recverpubkeyHash = SHA256.new(
+                hashlib.sha256(node.pubKey[randkeyno]).hexdigest().encode()
+            )
+            t1 = Transaction([], [], bitcoinvalue, recverpubkeyHash, True)
             self.transactions.append(t1)
         txn = self.transactions.copy()
         rootMerkleTree = self.generateMerkleTree(txn)
-        blk = Block(None,rootMerkleTree,self.generateNonce(),txn)
+        blk = Block(None, rootMerkleTree, self.generateNonce(), txn)
         for node in self.allNodes:
             node.processBlocks(blk)
 
         self.transactions = []
 
-
     def createBlock(self):
         start_time = time.time()
-        txn = self.transactions.copy()
-        rootMerkleTree = self.generateMerkleTree(txn)
-        blk = Block(self.blockchain.latestBlock,rootMerkleTree,self.generateNonce(),txn)
-        return blk
-
+        txn = self.transactions.copy()  # Copy all the transactions Node has performed
+        rootMerkleTree = self.generateMerkleTree(
+            txn
+        )  # Generates the merkle tree from txns
+        blk = Block(
+            self.blockchain.latestBlock, rootMerkleTree, self.generateNonce(), txn
+        )  # Creates block
+        return blk  # Returns the block
 
     def generateMerkleTree(self, txns):
         start_time = time.time()
         childs = []
         for i in txns:
-            childs.append((MerkleTree([i],True),0))
-        while(len(childs) > 1):
+            childs.append((MerkleTree([i], True), 0))
+        while len(childs) > 1:
             level = childs[0][1]
             merkleTreeChild = []
             for i in range(arity):
-                if(len(childs) > 0 and childs[0][1] == level):
+                if len(childs) > 0 and childs[0][1] == level:
                     merkleTreeChild.append(childs[0][0])
                     childs.remove(childs[0])
 
-            childs.append((MerkleTree(merkleTreeChild),level+1))
+            childs.append((MerkleTree(merkleTreeChild), level + 1))
         return childs[0][0]
 
     def proofOfWork(self):
-        for node in self.allNodes:
-            if(node.target is not None and self.target > node.target):
+        # Go through all nodes
+        # What is node target ?
+        # If the current node has the least target value
+
+        for node in Node.allNodes:
+            if node.target is not None and self.target > node.target:
                 return False
-            if(self.id != node.id and self.target == node.target and self.id > node.id):
+            # This is a tie breaker condition
+            # if two nodes have the same target the one with lesser id wins
+            if self.id != node.id and self.target == node.target and self.id > node.id:
                 return False
         return True
 
     def printTxn(self, txn_list):
         txns_executed = PrettyTable()
-        txns_executed.field_names = ["ID" , "IN/OUT" ,"Wallet ID", "Amount"]
+        txns_executed.field_names = ["ID", "IN/OUT", "Wallet ID", "Amount"]
         for i in range(len(txn_list)):
             for inp in txn_list[i].input:
                 wallet_amt = inp[0][0].output[inp[0][1]][0]
-                pubKeyHash = SHA256.new(hashlib.sha256(inp[1].pubKey).hexdigest().encode())
-                txns_executed.add_row([i, "IN", Node.publickeyMap[pubKeyHash.hexdigest()], wallet_amt])
+                pubKeyHash = SHA256.new(
+                    hashlib.sha256(inp[1].pubKey).hexdigest().encode()
+                )
+                txns_executed.add_row(
+                    [i, "IN", Node.publickeyMap[pubKeyHash.hexdigest()], wallet_amt]
+                )
             for otp in txn_list[i].output:
                 wallet_amt = otp[0]
                 pubKeyHash = otp[1].recvrkeyHash
-                txns_executed.add_row([i, "OUT", Node.publickeyMap[pubKeyHash], wallet_amt])
+                txns_executed.add_row(
+                    [i, "OUT", Node.publickeyMap[pubKeyHash], wallet_amt]
+                )
         print(txns_executed)
-        
+
     def printUTXO(self):
 
         x = PrettyTable()
 
-        x.field_names = ["Node ID", "Wallet 0", "Wallet 1", "Wallet 2", "Wallet 3","Wallet 4"]
+        x.field_names = [
+            "Node ID",
+            "Wallet 0",
+            "Wallet 1",
+            "Wallet 2",
+            "Wallet 3",
+            "Wallet 4",
+        ]
         for node in Node.allNodes:
             row = [node.id]
             for i in range(5):
-                pubKeyHash = SHA256.new(hashlib.sha256(node.pubKey[i]).hexdigest().encode())
+                pubKeyHash = SHA256.new(
+                    hashlib.sha256(node.pubKey[i]).hexdigest().encode()
+                )
                 amt = 0
                 try:
                     val = self.utxo[pubKeyHash.hexdigest()]
-                    for txn,ind in val:
+                    for txn, ind in val:
                         amt += txn.output[ind][0]
                 except KeyError:
                     amt += 0
                 row.append(amt)
             x.add_row(row)
         print(x)
-        print("--------------------------------------------------------------------------------")
+        print(
+            "--------------------------------------------------------------------------------"
+        )
+
 
 def run_thread(node):
     node.run()
@@ -302,5 +367,5 @@ print("--------After Creating Genesis Block Initial State of the Nodes---------"
 nodesList[0].printUTXO()
 
 with concurrent.futures.ThreadPoolExecutor(max_workers=numberOfNodes) as executor:
-        for node in nodesList:
-            executor.submit(run_thread,node)
+    for node in nodesList:
+        executor.submit(run_thread, node)
