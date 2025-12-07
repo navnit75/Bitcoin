@@ -15,6 +15,9 @@ from Transaction import *
 
 
 class Node:
+
+    # NOTE: These fields are kind of Global fields and are common for all the NODES
+    # TODO: Can be refactored
     allNodes = []
     txnFlag = True
     txnnodes = []
@@ -23,11 +26,14 @@ class Node:
     # publicKeyMap = {hash --> id}
     publickeyMap = {}
 
+    # NOTE: From here all the variables which you see is related to a single Node
     def __init__(self, id):
         self.id = id
         self.pubKey = []
         self.pvtKey = []
         self.blockchain = BlockChain()
+
+        # NOTE: create public key and private
         for i in range(5):
             key = RSA.generate(2048)
             self.pubKey.append(key.publickey().exportKey("PEM"))
@@ -35,7 +41,7 @@ class Node:
             pubKeyHash = SHA256.new(hashlib.sha256(self.pubKey[i]).hexdigest().encode())
             Node.publickeyMap[pubKeyHash.hexdigest()] = str(self.id) + " . " + str(i)
 
-        self.transactions = []
+        self.transactions = []  # This is a temporary storage
         self.blockqueue = []
         self.target = None  # This is Node's Hash Value
         self.incentive = 0
@@ -50,8 +56,8 @@ class Node:
         keyhash = SHA256.new(hashlib.sha256(pubKey).hexdigest().encode())
         return keyhash
 
-    # This is where the Node Run time begin's
-    # Maybe this is not such a great idea to keep the run time here but lets see
+    # NOTE: This is where the Node Run time begin's
+    # TODO: Maybe this is not such a great idea to keep the run time here but lets see
     def run(self):
         self.start = time.time()  # Records the start time
 
@@ -60,7 +66,6 @@ class Node:
 
             if end - self.start > 15:  # Waits for 15 unit of time
                 if len(self.transactions) > 0:
-                    # Again records the time
                     timer = time.time()
                     blk = self.createBlock()
                     self.target = blk.hashVal
@@ -70,7 +75,7 @@ class Node:
                     # 2. In case of the two nodes having same target value, the node with least id wins
                     pow = self.proofOfWork()
 
-                    # If the current node wins the POW
+                    # If the provided node wins the ProofOfWork
                     if pow:
                         Node.txnFlag = False
                         flag = True
@@ -116,7 +121,9 @@ class Node:
                                 .hexdigest()
                                 .encode()
                             )
+                            # Whoever wins the POW gets the incentive
                             txn = Transaction([], [], incentive, recverpubkeyHash, True)
+
                             for node in self.allNodes:
                                 node.processTransactions(txn)
                         else:
@@ -130,12 +137,15 @@ class Node:
 
             if dotxn <= 0.2 and Node.txnFlag and self.id not in Node.txnnodes:
                 recvr = randrange(0, numberOfNodes)
+                # Receiver
                 while str(recvr) == str(self.id):
                     recvr = randrange(0, numberOfNodes)
+
                 recvrnode = self.allNodes[recvr]
                 recvrkeyhash = recvrnode.getWalletAddress()
                 prev_txn = []
                 scriptsign = []
+
                 for j in range(5):
                     pkey = self.pubKey[j]
                     pvtkey = self.pvtKey[j]
@@ -144,7 +154,11 @@ class Node:
                         sendrpubkeyhash = SHA256.new(
                             hashlib.sha256(pkey).hexdigest().encode()
                         )
+
+                        # Find all the transactions from local UTXO
                         txn_l = self.utxo[sendrpubkeyhash.hexdigest()]
+
+                        # Storing all the previous transactions in this transaction
                         for t in txn_l:
                             sendrPubKeyHash = SHA256.new(
                                 hashlib.sha256(pkey).hexdigest().encode()
@@ -158,6 +172,7 @@ class Node:
                         continue
                 bitcoinval = randrange(10, 201)
                 tempReceiver = recvrkeyhash.hexdigest()
+
                 new_txn = Transaction(prev_txn, scriptsign, bitcoinval, recvrkeyhash)
                 Node.txns_performed.add_row(
                     [
@@ -203,21 +218,32 @@ class Node:
             self.transactions.append(txn)
 
     def processBlocks(self, blck):
+        # NOTE: Getting the head implementation of the Node
         if self.blockchain.rootBlock == None:
             self.blockchain.rootBlock = blck
 
         self.blockchain.latestBlock = blck
+
         temputxo = {}
+
+        # NOTE: I don't like this convention.
+        # TODO: Will try to refactor this to some type of dictionary or object based implementation
+        # for the Transaction so that its easier for readability of the code
         for txns in blck.txnList:
             for x in txns.input:
-                index = x[0][1]
-                scriptpubKey = x[0][0].output[index][1].recvrkeyHash
+                index = x[0][1]  # x = ((prevTxn, index), publicScriptSignature]
+                scriptpubKey = x[0][0].output[index][1].recvrkeyHash  # Receivery Hash
                 try:
                     self.utxo[scriptpubKey] = []
                 except KeyError:
                     continue
+
             index = 0
+
+            # What do you mean ? x in txns.output
+            # What is x[1].
             for x in txns.output:
+                # x = (amnt, recvr_key)
                 scriptpubKey = x[1].recvrkeyHash
                 try:
                     temputxo[scriptpubKey].append((txns, index))
@@ -229,13 +255,16 @@ class Node:
                 self.transactions.remove(txns)
             except ValueError:
                 continue
+
         for key in temputxo:
             val = temputxo[key]
             for j in val:
                 try:
+                    # For the given receiver key, append the transaction
                     self.utxo[key].append(j)
                 except KeyError:
                     self.utxo[key] = [j]
+
         self.start = time.time()
 
     def createGenesisBlock(self):

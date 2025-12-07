@@ -17,6 +17,8 @@ For Python 3.10 - <br/>
 
 > pip install prettytable
 
+> pip install crypto
+
 <br/>
 
 

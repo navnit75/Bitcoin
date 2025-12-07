@@ -5,6 +5,7 @@ from HashAlgo import *
 
 
 class Block:
+    # NOTE: Treat it like any Doubly LinkedList with HASH based pointer
     def __init__(self, prevBlockPtr, root, nonce, transactionList):
         self.prevBlockPtr = prevBlockPtr
         if prevBlockPtr:
