@@ -1,12 +1,10 @@
 ### Bitcoin
----
 This work is forked from [RajputGarima/Bitcoin](https://github.com/RajputGarima/Bitcoin). Earlier I was just using this for understanding BitCoin system as whole. But I started cleaning the code base for my own understanding. Hence following changes has been added :-
 1. Refactored the full code based into some simple classes
 2. Added logging mechanism with `__str__` implementation for each class, for easy tracking.
 
 
 ## ToDo
----
 ```text
 1. More refactoring
 2. Better representation of the output
@@ -16,7 +14,6 @@ This work is forked from [RajputGarima/Bitcoin](https://github.com/RajputGarima/
 ```
 
 ## Summary
----
 Implementation of bitcoin system with 'n' number of nodes where 'n' is adjustable. There are 'n' independent threads in the system and the network between these nodes is assumed to be fully connected. A node can perform any number of transactions and the node that wins in the **proof-of-work** and satisfies **consensus requirements** finally gets to create a block which is added to the immutable block chain.
 
 To maintain integrity of the blocks, **Merkle tree** of all the transactions present in the block is created. The tree stores hash pointers at each level. A block also stores hash pointer of the previous block in the chain. This ensures any tampering with a transaction or a block leads to disturbance in the hash values along the complete chain which can not go undetected.
