@@ -1,6 +1,6 @@
 import hashlib
 
-from config import hashSize
+from Common.config import hashSize
 
 
 def generateHash(message):
@@ -13,5 +13,4 @@ def generateHash(message):
         result = hashlib.sha384(message.encode())
     else:
         result = hashlib.sha512(message.encode())
-
     return result.hexdigest()
