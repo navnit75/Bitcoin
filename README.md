@@ -1,7 +1,6 @@
 # Bitcoin
 
 This work is forked from [RajputGarima/Bitcoin](https://github.com/RajputGarima/Bitcoin), I am just using this to understand how bitcoin work. <br/>
-
 ---
 Implementation of bitcoin system with 'n' number of nodes where 'n' is adjustable. There are 'n' independent threads in the system and the network between these nodes is assumed to be fully connected. A node can perform any number of transactions and the node that wins in the **proof-of-work** and satisfies **consensus requirements** finally gets to create a block which is added to the immutable block chain. <br />
 
@@ -12,12 +11,10 @@ Each node is given 5 wallets i.e. 5 pairs of *<publicKey, privateKey>* to give *
 There is a config file *(config.py)* that allows adjusting the hyper-parameters of the Blockchain like number of nodes in the network, arity of Merkle tree, Nonce size, Hash size etc. <br />
 
 For Python 3.10 - <br/>
-
 > pip install pycryptodome
-
 > pip install prettytable
-
 > pip install crypto
+> pip install datetime 
 
 <br/>
 

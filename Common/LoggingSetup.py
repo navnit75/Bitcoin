@@ -1,6 +1,8 @@
 import contextvars
 import logging
 import sys
+from datetime import datetime
+from pathlib import Path
 
 # Creating a variable which can be provides
 nodeId = contextvars.ContextVar("node_id", default="0")
@@ -23,16 +25,31 @@ class NodeIdFilter(logging.Filter):
 logger = logging.getLogger("Bitcoin")
 logger.setLevel(logging.INFO)
 
-# CONSOLE HANDLER
-# NOTE: This particular handler handles the logging for showing to the output
-# You can add more handlers and write it to file if  you need
-console = logging.StreamHandler(sys.stdout)
-console.setLevel(logging.INFO)
-
-# FORMAT
-fmt = logging.Formatter(
+formatting = logging.Formatter(
     "%(asctime)s - %(name)s - %(levelname)s - Node=%(node_id)s - %(message)s"
 )
+
+# NOTE : Note you can add handlers from your own side
+# CONSOLE HANDLER
+# NOTE : Right Now I am commenting this, you can uncomment it according to your own needs
+
+# consoleHandler = logging.StreamHandler(sys.stdout)
+# consoleHandler.setLevel(logging.INFO)
+# consoleHandler.setFormatter(formatting)
+
+# FILE HANDLER
+# NOTE:
+logDir = Path("logs")
+logDir.mkdir(exist_ok=True)
+ts = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+logFile = logDir / f"Bitcoin_{ts}.log"
+
+fileHandler = logging.FileHandler(logFile, mode="w", encoding="utf-8")
+fileHandler.setLevel(logging.INFO)
+fileHandler.setFormatter(formatting)
+# FORMAT
+
+# Attaching various handlers to logging handlers
+# logger.addHandler(consoleHandler)
+logger.addHandler(fileHandler)
 logger.addFilter(NodeIdFilter())
-console.setFormatter(fmt)
-logger.addHandler(console)
