@@ -1,4 +1,4 @@
-### Bitcoin
+## Bitcoin
 This work is forked from [RajputGarima/Bitcoin](https://github.com/RajputGarima/Bitcoin). Earlier I was just using this for understanding BitCoin system as whole. But I started cleaning the code base for my own understanding. Hence following changes has been added :-
 1. Refactored the full code based into some simple classes
 2. Added logging mechanism with `__str__` implementation for each class, for easy tracking.
