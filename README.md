@@ -1,33 +1,30 @@
-# Bitcoin
+## Bitcoin
 
-This work is forked from [RajputGarima/Bitcoin](https://github.com/RajputGarima/Bitcoin), I am just using this to understand how bitcoin work. <br/>
+This work is forked from [RajputGarima/Bitcoin](https://github.com/RajputGarima/Bitcoin), I am just using this to understand how bitcoin work.
 
 ---
-Implementation of bitcoin system with 'n' number of nodes where 'n' is adjustable. There are 'n' independent threads in the system and the network between these nodes is assumed to be fully connected. A node can perform any number of transactions and the node that wins in the **proof-of-work** and satisfies **consensus requirements** finally gets to create a block which is added to the immutable block chain. <br />
+Implementation of bitcoin system with 'n' number of nodes where 'n' is adjustable. There are 'n' independent threads in the system and the network between these nodes is assumed to be fully connected. A node can perform any number of transactions and the node that wins in the **proof-of-work** and satisfies **consensus requirements** finally gets to create a block which is added to the immutable block chain.
 
-To maintain integrity of the blocks, **Merkle tree** of all the transactions present in the block is created. The tree stores hash pointers at each level. A block also stores hash pointer of the previous block in the chain. This ensures any tampering with a transaction or a block leads to disturbance in the hash values along the complete chain which can not go undetected. <br />
+To maintain integrity of the blocks, **Merkle tree** of all the transactions present in the block is created. The tree stores hash pointers at each level. A block also stores hash pointer of the previous block in the chain. This ensures any tampering with a transaction or a block leads to disturbance in the hash values along the complete chain which can not go undetected.
 
 Each node is given 5 wallets i.e. 5 pairs of *<publicKey, privateKey>* to give **Multi-Transaction support.** 
 
-There is a config file *(config.py)* that allows adjusting the hyper-parameters of the Blockchain like number of nodes in the network, arity of Merkle tree, Nonce size, Hash size etc. <br />
+There is a config file *(config.py)* that allows adjusting the hyper-parameters of the Blockchain like number of nodes in the network, arity of Merkle tree, Nonce size, Hash size etc. 
 
-For Python 3.10 - <br/>
-> pip install pycryptodome
-
-> pip install prettytable
-
-> pip install crypto
-
-> pip install datetime 
-
-<br/>
+For Python 3.10 :-
+```bash
+pip install pycryptodome
+pip install prettytable
+pip install crypto
+pip install datetime 
+```
 
 
-To run the code, type - <br />
+To run the code, type
+```bash
+python3 main.py
+```
 
-> python3 main.py
-
-Some minor changes ( Commenting one or two lines ) for making this work, can be checked in commit history. 
 
 It prints out the log of transactions starting from the initial state of each node. All the transactions along with the state of all the nodes is printed upon addition of a new block to the blockchain. <br />
 
