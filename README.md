@@ -24,7 +24,7 @@ For Python 3.10 - <br/>
 
 To run the code, type - <br />
 
-> python3 Node.py
+> python3 main.py
 
 Some minor changes ( Commenting one or two lines ) for making this work, can be checked in commit history. 
 

@@ -3,10 +3,14 @@ from Common.HashAlgo import *
 
 
 class MerkleTreeNode:
-    # NOTE: The logic behind the isLeafNode is that, if a node is a leav node the childrenTreeNodes will be null
-    # But the it will have txns in the txnList
-    # But if a node of tree is non leaf - it will not contain txn list
-    # NOTE: to remove the ambiguity in naming of a node vs merkle tree node, I am naming all the merkle Tree Node based account into
+    """
+    Represents the structure of a Merkle Tree Node
+    childrenTreeNodes : Non leaf nodes in merkle tree , have other merkle tree node as children, this represents a list of children nodes which needs to be contained under to be created node
+    txn : Leaf nodes , doesn't have any children nodes, but they have transaction stored in them
+    isLeafNode: Now we can use the flag isLeafNode, to query if a merkle node is either leaf o
+
+    """
+
     def __init__(self, childrenTreeNodes, txn=None, isLeafNode=False):
         self.txn = txn
         self.isLeafNode = isLeafNode
