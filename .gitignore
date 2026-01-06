@@ -1,6 +1,7 @@
 # Python Bytecode / cache
 __pycache__/
 *.py[cod]
+logs/
 
 # MacOS
 .DS_Store
