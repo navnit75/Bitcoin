@@ -319,7 +319,7 @@ class Node:
                                 "*********************** Transactions Performed **************************"
                             )
                             print(Node.allTxnPerformedLog)
-                            logger.info(str(Node.allTxnPerformedLog))
+                            logger.info("\n" + str(Node.allTxnPerformedLog))
 
                             Node.allTxnPerformedLog.clear_rows()
 
