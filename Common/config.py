@@ -6,3 +6,4 @@ walletCountPerNode = 5
 incentiveAmount = 1
 genesisBlockBitCoin = 1000
 sizeOfNonce = 32
+probabilityOfTxn = 0.2  # NOTE : out of 1

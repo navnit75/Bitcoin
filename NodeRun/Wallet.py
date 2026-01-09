@@ -3,7 +3,7 @@ import hashlib
 from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
 
-
+# NOTE : This class represents a Wallet
 class Wallet:
     walletIdCounter = 0
 

@@ -1,6 +1,6 @@
 from NodeRun.TransactionHandling.Transaction import Transaction
 
-
+# NOTE : This class represents a UTXO Entry
 class UTXOEntry:
     def __init__(self, transaction: Transaction, outputEntryIndex: int):
         self._transaction = transaction

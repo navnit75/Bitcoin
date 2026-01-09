@@ -8,7 +8,6 @@ class MerkleTreeNode:
     childrenTreeNodes : Non leaf nodes in merkle tree , have other merkle tree node as children, this represents a list of children nodes which needs to be contained under to be created node
     txn : Leaf nodes , doesn't have any children nodes, but they have transaction stored in them
     isLeafNode: Now we can use the flag isLeafNode, to query if a merkle node is either leaf o
-
     """
 
     def __init__(self, childrenTreeNodes, txn=None, isLeafNode=False):

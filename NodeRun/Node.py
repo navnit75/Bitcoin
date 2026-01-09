@@ -38,6 +38,7 @@ class Node:
         Node.nodeIdCounter += 1
         self.createWallets()
 
+    # NOTE : Wallet creator for the Node
     def createWallets(self):
         Wallet.walletIdCounter = 0
         for i in range(walletCountPerNode):
@@ -48,6 +49,7 @@ class Node:
             )
             logger.info("Wallet Created : " + str(newWallet))
 
+    # NOTE : returns the public hash of a random node
     def getRandomWalletPublicKeyHash(self):
         randomWalletIdx = randrange(0, walletCountPerNode)
         logger.info(
@@ -59,42 +61,7 @@ class Node:
         walletSelected = self.wallets[randomWalletIdx]
         return walletSelected.getWalletPublicKeyHash()
 
-    def getNodeConsensus(self, block):
-        if self.blockChain.latestBlock != block.prevBlockPtr:
-            logger.info(
-                "getNodeConsensus: The provided block is not the latest block, returned False"
-            )
-            return False
-        else:
-            for txn in block.txnList:
-                if txn.validTransaction is False:
-                    logger.info(
-                        "getNodeConsensus: One of the transaction in block is not valid, returned False"
-                    )
-                    return False
-
-                for inputEntry in txn.input:
-                    getSenderPubKey = inputEntry.getSenderHashes().senderPublicKey
-                    senderPubKeyHash = SHA256.new(
-                        hashlib.sha256(getSenderPubKey).hexdigest().encode()
-                    )
-                    txn = inputEntry.getTransaction()
-                    try:
-                        searchFlag = False
-                        utxoEntryList = self.localUTXO[senderPubKeyHash.hexdigest()]
-                        for utxoEntry in utxoEntryList:
-                            if utxoEntry.getTransaction() == txn:
-                                searchFlag = True
-                                break
-                        if not searchFlag:
-                            logger.info(
-                                "getNodeConsensus: Transaction not found in local UTXO, returned False"
-                            )
-                        return searchFlag
-                    except KeyError:
-                        return False
-        return True
-
+    # NOTE : Basically adds the Transaction to node txns, if the provided txn is valid
     def processTransaction(self, txn):
         logger.info(
             "processTransaction : Txn Validity Check " + str(txn.validTransaction)
@@ -102,6 +69,35 @@ class Node:
         if txn.validTransaction:
             self.nodeTxns.append(txn)
 
+    # NOTE : Gets consensus from all the nodes regarding the validity of the block
+    # NOTE : Bitcoin gets the consensus from all the nodes, and believes the result whatever majority replies with
+    # NOTE : In our particular case if any node replies False, the consensus is False
+    def getConsensus(self, block):
+        for node in Node.listOfNodes:
+            if node.getNodeConsensus(block) is False:
+                return False
+        return True
+
+    # NOTE : Transmits the block to all the nodes
+    def transmitBlock(self, block):
+        for node in Node.listOfNodes:
+            node.processBlock(block)
+
+    # NOTE : Transmits the transaction to all the nodes
+    def transmitTxn(self, txn):
+        for node in self.listOfNodes:
+            node.processTransaction(txn)
+    
+    # NOTE : Creates and process incentive transaction
+    def createAndProcessIncentive(self):
+        self.incentive += incentiveAmount
+        randomWalletPubKeyHash = self.getRandomWalletPublicKeyHash()
+        txn = Transaction([], [], incentiveAmount, randomWalletPubKeyHash, True)
+        logger.info("Incentive Transaction Created " + str(txn))
+        self.transmitTxn(txn)
+
+    # NOTE : Given a block with transactions, this function adds the transaction to local UTXO
+    # NOTE : Also adds the block to local block chain
     def processBlock(self, block):
         if self.blockChain.rootBlock is None:
             self.blockChain.rootBlock = block
@@ -155,6 +151,7 @@ class Node:
         )
         self.start = time.time()
 
+    # NOTE : Genesis block creator, when a genesis block is created a certain amount is credited to random wallets
     def createGenesisBlock(self):
         bitCoinVal = genesisBlockBitCoin
         for _ in range(nodeCount):
@@ -173,6 +170,8 @@ class Node:
         # Once the nodes have processed the txns, this basically removes the transactions related to genesis transactions from the list of node - 0
         self.nodeTxns = []
 
+    # NOTE : At any instance a node can call this function to copy its transaction into a block
+    # NOTE : This function returns the created block
     def createBlock(self):
         start_time = time.time()
         copyOfTxnList = self.nodeTxns.copy()
@@ -180,6 +179,9 @@ class Node:
         logger.info("createBlock: Block creation successful")
         return blk  # Returns the block
 
+    # NOTE : This is function which decides if the current node wins the Proof of work or not
+    # NOTE : rules are simple, the node with least last created block hash wins
+    # NOTE : In case of tie, the node with least node id wins
     def proofOfWork(self):
         # NOTE: Basically pow defines which node gets to create block
         # If the current node has the least , last created block hash; wins the pow
@@ -206,13 +208,183 @@ class Node:
                 return False
         return True
 
-    # TODO : Update this structure of the transaction to show well formatted transaction
+    # NOTE : Checks if the txn in given block is valid or not
+    def getNodeConsensus(self, block):
+        if self.blockChain.latestBlock != block.prevBlockPtr:
+            logger.info(
+                "getNodeConsensus: The provided block is not the latest block, returned False"
+            )
+            return False
+        else:
+            for txn in block.txnList:
+                if txn.validTransaction is False:
+                    logger.info(
+                        "getNodeConsensus: One of the transaction in block is not valid, returned False"
+                    )
+                    return False
+
+                for inputEntry in txn.input:
+                    getSenderPubKey = inputEntry.getSenderHashes().senderPublicKey
+                    senderPubKeyHash = SHA256.new(
+                        hashlib.sha256(getSenderPubKey).hexdigest().encode()
+                    )
+                    txn = inputEntry.getTransaction()
+                    try:
+                        searchFlag = False
+                        utxoEntryList = self.localUTXO[senderPubKeyHash.hexdigest()]
+                        for utxoEntry in utxoEntryList:
+                            if utxoEntry.getTransaction() == txn:
+                                searchFlag = True
+                                break
+                        if not searchFlag:
+                            logger.info(
+                                "getNodeConsensus: Transaction not found in local UTXO, returned False"
+                            )
+                        return searchFlag
+                    except KeyError:
+                        return False
+        return True
+    
+    # NOTE : This function creates a random transaction from the node
+    def createRandomTransaction(self):
+        logger.info("Beginning the random transaction creation")
+
+        # NOTE: Prepare sender information
+        previousTxnsList = []
+        senderHashesList = []
+
+        for wallet in self.wallets:
+            senderPubKey = wallet.getWalletPublicKey()
+            senderPvtKey = wallet.getWalletPrivateKey()
+            try:
+                senderPubKeyHashTemp = wallet.getWalletPublicKeyHash()
+                senderInputTxnList = self.localUTXO[senderPubKeyHashTemp.hexdigest()]
+
+                for utxoEntry in senderInputTxnList:
+                    logger.info("Checking the UTXO Entry " + str(utxoEntry))
+                    senderPubKeyHash = wallet.getWalletPublicKeyHash()
+                    senderPubKeyHash.update(
+                        utxoEntry.getTransaction().getTransactionHash().encode()
+                    )
+                    genSigner = PKCS115_SigScheme(RSA.importKey(senderPvtKey))
+                    genSenderSignature = genSigner.sign(senderPubKeyHash)
+                    previousTxnsList.append(utxoEntry)
+                    senderHashesList.append(
+                        SenderHashes(genSenderSignature, senderPubKey)
+                    )
+            except KeyError:
+                continue
+        logger.info("Sender Hashes and Previous Txn List processing completed")
+
+        # NOTE: Prepare receiver based information
+        # NOTE: Start with generating
+        randomNodeIdx = randrange(0, nodeCount)
+        while str(randomNodeIdx) == str(self.nodeId):
+            randomNodeIdx = randrange(0, nodeCount)
+
+        randomNode = Node.listOfNodes[randomNodeIdx]
+        randomNodePubKeyHash = randomNode.getRandomWalletPublicKeyHash()
+        randomNodePubKeyStrHash = randomNodePubKeyHash.hexdigest()
+        logger.info(
+            "Receiver Node Selected "
+            + str(Node.walletsPublicKeyMap[randomNodePubKeyStrHash])
+        )
+
+        randomBitCoinVal = randrange(10, 201)
+        newTxn = Transaction(
+            previousTxnsList,
+            senderHashesList,
+            randomBitCoinVal,
+            randomNodePubKeyHash,
+        )
+
+        logger.info("New Transaction Created " + str(newTxn))
+
+        Node.allTxnPerformedLog.add_row(
+            [
+                self.nodeId,
+                Node.walletsPublicKeyMap[randomNodePubKeyStrHash],
+                randomBitCoinVal,
+                newTxn.validTransaction,
+            ]
+        )
+        return newTxn
+
+    # NOTE : This is the main function which runs the node
+    def run(self):
+        logger.info("Beginnging of thread")
+        self.start = time.time()
+
+        while True:
+            logger.info("Beginning of while loop")
+            end = time.time()
+
+            if end - self.start > 15:
+                if len(self.nodeTxns) > 0:
+                    block = self.createBlock()
+                    logger.info("Block Created : " + str(block))
+                    self.lastCreatedBlockHashVal = block.getBlockHash()
+                    pow = self.proofOfWork()
+
+                    # NOTE : Whichever node wins POW
+                    if pow:
+                        logger.info("Proof of Work : " + str(pow))
+                        Node.txnFlag = False  # NOTE : This flag is set because we don't want nodes to create transactions when this is happening
+                        consensusFlag = self.getConsensus(block)
+                        if consensusFlag:
+                            print("*** PRINTING DETAILS ***")
+                            self.printUTXOBeforeTxn()
+                            self.printTxnsPerformed()
+
+                            self.transmitBlock(block)
+
+                            self.printUTXOAfterTxn()
+                            self.printTxnsExecuted(block)
+
+                            self.createAndProcessIncentive()
+                        else:
+                            self.nodeTxns = []
+
+                        Node.txnFlag = True
+                        Node.txnNodes = []
+                    else:
+                        self.start = time.time()
+
+            p_of_txn = random()
+
+            logger.info(
+                "Starting Transaction Creator , random number ="
+                + str(p_of_txn)
+                + " Node.txnFlag "
+                + str(Node.txnFlag)
+                + " Node.txnNodes : "
+                + str(Node.txnNodes)
+            )
+
+            createTxnCondition = (
+                p_of_txn <= probabilityOfTxn
+                and Node.txnFlag
+                and self.nodeId not in Node.txnNodes
+            )
+            if createTxnCondition:
+                newTxn = self.createRandomTransaction()
+
+                if newTxn.validTransaction:
+                    Node.txnNodes.append(self.nodeId)
+                self.transmitTxn(newTxn)
+            time.sleep(1)
+
+
+    # ----- PRINTING FUNCTIONS ------ #
+    # NOTE : Prints the transaction
     def printTxn(self, txnList):
         logger.info("printTxn : Print the transaction with input and output enteries")
-        txnsExecuted = PrettyTable()
-        txnsExecuted.field_names = ["ID", "IN/OUT", "Wallet ID", "Amount"]
         txnIdx = 0
         for txn in txnList:
+            print(f"\n+--------- TRANSACTION - {txnIdx} ---------+")
+            logger.info(f"\n+--------- TRANSACTION - {txnIdx} ---------+")
+            txnsExecuted = PrettyTable()
+            txnsExecuted.field_names = ["ID", "IN/OUT", "Wallet ID", "Amount"]
             for inputEntry in txn.input:
                 index = inputEntry.getOutputEntryIndex()
                 walletAmt = inputEntry.getTransaction().output[index].getAmount()
@@ -236,10 +408,12 @@ class Node:
                 txnsExecuted.add_row(
                     [txnIdx, "OUT", Node.walletsPublicKeyMap[recvPubKeyHash], walletAmt]
                 )
-            txnIdx += 1
-        print(txnsExecuted)
-        logger.info("\n" + str(txnsExecuted))
 
+            print(txnsExecuted)
+            logger.info("\n" + str(txnsExecuted))
+            txnIdx += 1
+
+    # NOTE : Prints the UTXO of all the nodes
     def printUTXO(self):
         logger.info("printUTXO: Printing the local UTXO state, this is basically")
         x = PrettyTable()
@@ -268,188 +442,42 @@ class Node:
             x.add_row(row)
         print(x)
         logger.info("\n" + str(x))
+        print("\n")
+
+    # NOTE : Prints the UTXO before performing transaction
+    def printUTXOBeforeTxn(self):
         print(
-            "********************************************************************************"
+            "******** Before Performing the Transaction final state of the Nodes *********"
         )
+        logger.info(
+            "******** Before Performing the Transaction final state of the Nodes *********"
+        )
+        self.printUTXO()
+        print("\n")
 
-    def run(self):
-        logger.info("Starting the thread")
-        self.start = time.time()
+    # NOTE : Prints the UTXO after performing transaction
+    def printUTXOAfterTxn(self):
+        logger.info("Completed the processBlock for all the nodes")
+        print(
+            "******** After Performing the Transaction final state of the Nodes *********"
+        )
+        logger.info(
+            "******** After Performing the Transaction final state of the Nodes *********"
+        )
+        self.printUTXO()
 
-        while True:
-            logger.info("Starting another iteration of while loop")
-            end = time.time()
-            if end - self.start > 15:
-                if len(self.nodeTxns) > 0:
-                    timer = time.time()
+    # NOTE : Prints all the transactions performed
+    def printTxnsPerformed(self):
+        print("********* Transactions Performed *********")
+        logger.info("********* Transactions Performed *********")
+        print(Node.allTxnPerformedLog)
+        logger.info("\n" + str(Node.allTxnPerformedLog))
+        Node.allTxnPerformedLog.clear_rows()
+        print("\n")
 
-                    block = self.createBlock()
-                    logger.info("Block Creation Completed " + str(block))
-                    self.lastCreatedBlockHashVal = block.getBlockHash()
-
-                    pow = self.proofOfWork()
-                    logger.info("Proof of work completed " + str(pow))
-                    if pow:
-                        Node.txnFlag = False
-                        flag = True
-
-                        for node in Node.listOfNodes:
-                            if node.getNodeConsensus(block) is False:
-                                flag = False
-                                break
-                        logger.info("Inside POW block")
-                        if flag:
-                            print(
-                                "********Before Performing the Transaction final state of the Nodes*********"
-                            )
-                            logger.info(
-                                "********Before Performing the Transaction final state of the Nodes*********"
-                            )
-                            self.printUTXO()
-                            print(
-                                "********************************************************************************"
-                            )
-                            logger.info(
-                                "********************************************************************************"
-                            )
-                            print(
-                                "*********************** Transactions Performed **************************"
-                            )
-                            logger.info(
-                                "*********************** Transactions Performed **************************"
-                            )
-                            print(Node.allTxnPerformedLog)
-                            logger.info("\n" + str(Node.allTxnPerformedLog))
-
-                            Node.allTxnPerformedLog.clear_rows()
-
-                            print(
-                                "********************************************************************************"
-                            )
-                            logger.info(
-                                "********************************************************************************"
-                            )
-
-                            for node in Node.listOfNodes:
-                                node.processBlock(block)
-
-                            logger.info("Completed the processBlock for all the nodes")
-                            print(
-                                "********After Performing the Transaction final state of the Nodes*********"
-                            )
-                            logger.info(
-                                "********After Performing the Transaction final state of the Nodes*********"
-                            )
-
-                            self.printUTXO()
-
-                            print(
-                                "*********************** Transactions Executed **************************"
-                            )
-                            logger.info(
-                                "*********************** Transactions Executed **************************"
-                            )
-                            self.printTxn(block.txnList)
-
-                            print(
-                                "********************************************************************************"
-                            )
-                            logger.info(
-                                "********************************************************************************"
-                            )
-
-                            Node.txnFlag = True
-                            Node.txnNodes = []
-                            self.incentive += incentiveAmount
-
-                            randomWalletPubKeyHash = self.getRandomWalletPublicKeyHash()
-                            txn = Transaction(
-                                [], [], incentiveAmount, randomWalletPubKeyHash, True
-                            )
-                            logger.info("Incentive Transaction Created " + str(txn))
-                            for node in Node.listOfNodes:
-                                node.processTransaction(txn)
-                        else:
-                            self.nodeTxns = []
-                            Node.txnFlag = True
-                            Node.txnNodes = []
-                    else:
-                        self.start = time.time()
-            dotxn = random()
-            logger.info(
-                "Starting Transaction Creator , dotxn number = "
-                + str(dotxn)
-                + " Node.txnFlag "
-                + str(Node.txnFlag)
-                + " Node.txnNodes : "
-                + str(Node.txnNodes)
-            )
-            if dotxn <= 0.2 and Node.txnFlag and self.nodeId not in Node.txnNodes:
-                logger.info("Inside the create random transaction block")
-                # NOTE: Prepare sender information
-                previousTxnsList = []
-                senderHashesList = []
-
-                for wallet in self.wallets:
-                    senderPubKey = wallet.getWalletPublicKey()
-                    senderPvtKey = wallet.getWalletPrivateKey()
-                    try:
-                        senderPubKeyHashTemp = wallet.getWalletPublicKeyHash()
-                        senderInputTxnList = self.localUTXO[
-                            senderPubKeyHashTemp.hexdigest()
-                        ]
-                        for utxoEntry in senderInputTxnList:
-                            logger.info("Checking the UTXO Entry " + str(utxoEntry))
-                            senderPubKeyHash = wallet.getWalletPublicKeyHash()
-                            senderPubKeyHash.update(
-                                utxoEntry.getTransaction().getTransactionHash().encode()
-                            )
-                            genSigner = PKCS115_SigScheme(RSA.importKey(senderPvtKey))
-                            genSenderSignature = genSigner.sign(senderPubKeyHash)
-                            previousTxnsList.append(utxoEntry)
-                            senderHashesList.append(
-                                SenderHashes(genSenderSignature, senderPubKey)
-                            )
-                    except KeyError:
-                        continue
-                logger.info("Sender Hashes and Previous Txn List processing over")
-
-                # NOTE: Prepare receiver based information
-                # NOTE: Start with generating
-                randomNodeIdx = randrange(0, nodeCount)
-                while str(randomNodeIdx) == str(self.nodeId):
-                    randomNodeIdx = randrange(0, nodeCount)
-
-                randomNode = Node.listOfNodes[randomNodeIdx]
-                randomNodePubKeyHash = randomNode.getRandomWalletPublicKeyHash()
-                logger.info("Line 372 , getRandomWalletPublicKeyHash()")
-                randomNodePubKeyStrHash = randomNodePubKeyHash.hexdigest()
-                logger.info(
-                    "Receiver Node Selected "
-                    + str(Node.walletsPublicKeyMap[randomNodePubKeyStrHash])
-                )
-
-                randomBitCoinVal = randrange(10, 201)
-                newTxn = Transaction(
-                    previousTxnsList,
-                    senderHashesList,
-                    randomBitCoinVal,
-                    randomNodePubKeyHash,
-                )
-                logger.info("New Transaction Created " + str(newTxn))
-
-                Node.allTxnPerformedLog.add_row(
-                    [
-                        self.nodeId,
-                        Node.walletsPublicKeyMap[randomNodePubKeyStrHash],
-                        randomBitCoinVal,
-                        newTxn.validTransaction,
-                    ]
-                )
-
-                if newTxn.validTransaction:
-                    Node.txnNodes.append(self.nodeId)
-
-                for node in Node.listOfNodes:
-                    node.processTransaction(newTxn)
-            time.sleep(1)
+    # NOTE : Prints all the transactions executed in the block
+    def printTxnsExecuted(self, block):
+        print("****** Transactions Executed ******")
+        logger.info("****** Transactions Executed ******")
+        self.printTxn(block.txnList)
+        print("\n")
