@@ -6,11 +6,7 @@ This work is forked from [RajputGarima/Bitcoin](https://github.com/RajputGarima/
 
 ## ToDo
 ```text
-1. More refactoring
-2. Better representation of the output
-3. Add screen shots here for better understanding
-4. Add comments and understanding on the go
-5. Integrate design patterns if any
+1. Integrate design patterns if any
 ```
 
 ## Summary
@@ -46,3 +42,18 @@ Refer to `REPORT.pdf` for detailed implementation based analysis.
 Meanwhile one can also refer to the Bitcoin base paper. Where it all started :)
 
 
+## Output
+### Genesis Transaction Creation
+![](./Output/genesis.png)
+
+### Initial state of UTXO
+![](./Output/beforeUTXO.png)
+
+### Transactions Performed
+![](./Output/txnPerformed.png)
+
+### After Transactions , state of UTXO
+![](./Output/afterUTXO.png)
+
+### Transactions Executed
+![](./Output/genesis.png)
