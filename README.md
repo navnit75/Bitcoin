@@ -72,5 +72,5 @@ Meanwhile one can also refer to the Bitcoin base paper. Where it all started :)
 
 ### Transactions Executed
 <!-- ![](./Output/txnExecuted.png =500x) -->
-<img src="./Output/txnExecuted.png" alt="Screenshot" width="420" />
+<img src="./Output/txnExecuted.png" alt="Screenshot" width="400" />
 
