@@ -56,4 +56,4 @@ Meanwhile one can also refer to the Bitcoin base paper. Where it all started :)
 ![](./Output/afterUTXO.png)
 
 ### Transactions Executed
-![](./Output/genesis.png)
+![](./Output/txnExecuted.png)
