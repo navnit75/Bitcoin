@@ -52,16 +52,25 @@ Meanwhile one can also refer to the Bitcoin base paper. Where it all started :)
 
 ## Output
 ### Genesis Transaction Creation
-![](./Output/genesis.png)
+<!-- ![](./Output/genesis.png) -->
+<img src="./Output/genesis.png" alt="Screenshot" width="420" />
+
 
 ### Initial state of UTXO
-![](./Output/beforeUTXO.png)
+<!-- ![](./Output/beforeUTXO.png) -->
+<img src="./Output/beforeUTXO.png" alt="Screenshot" width="420" />
 
 ### Transactions Performed
-![](./Output/txnPerformed.png)
+<!-- ![](./Output/txnPerformed.png) -->
+<img src="./Output/txnPerformed.png" alt="Screenshot" width="420" />
+
 
 ### After Transactions , state of UTXO
-![](./Output/afterUTXO.png)
+<!-- ![](./Output/afterUTXO.png) -->
+<img src="./Output/afterUTXO.png" alt="Screenshot" width="420" />
+
 
 ### Transactions Executed
-![](./Output/txnExecuted.png =500x)
+<!-- ![](./Output/txnExecuted.png =500x) -->
+<img src="./Output/txnExecuted.png" alt="Screenshot" width="420" />
+
