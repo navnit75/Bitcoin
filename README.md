@@ -1,13 +1,18 @@
 ## Bitcoin
-This work is forked from [RajputGarima/Bitcoin](https://github.com/RajputGarima/Bitcoin). Earlier I was just using this for understanding BitCoin system as whole. But I started cleaning the code base for my own understanding. Hence following changes has been added :-
+This work is forked from [RajputGarima/Bitcoin](https://github.com/RajputGarima/Bitcoin).
+Initially I was just using this for understanding Bitcoin system as a whole. Something simple enough to understand, and easy enough to contribute to. But I started cleaning the code base for my own understanding. Hence following changes has been added :-
 1. Refactored the full code based into some simple classes
-2. Added logging mechanism with `__str__` implementation for each class, for easy tracking.
+2. Added logging mechanism with `__str__` implementation for each class, for easy logging.
 
 
 ## ToDo
 ```text
 1. Integrate design patterns if any
+2. Write unit tests; I know people don't do that usually on a open source repo but I am old fashioned.
 ```
+
+## Questions I am still not able to answer ?
+1. Can we integrate some kind of design patterns if any ? 
 
 ## Summary
 Implementation of bitcoin system with 'n' number of nodes where 'n' is adjustable. There are 'n' independent threads in the system and the network between these nodes is assumed to be fully connected. A node can perform any number of transactions and the node that wins in the **proof-of-work** and satisfies **consensus requirements** finally gets to create a block which is added to the immutable block chain.
@@ -33,10 +38,13 @@ python3 main.py
 ```
 
 
-It prints out the log of transactions starting from the initial state of each node. All the transactions along with the state of all the nodes is printed upon addition of a new block to the blockchain. <br />
+It prints out the log of transactions starting from the initial state of each node. All the transactions along with the state of all the nodes is printed upon addition of a new block to the blockchain.
 
-The code runs infinitely as a bitcoin system is supposed to do. Random transactions would keep taking place and the nodes winning hash puzzle will keep on adding blocks to the block chain. To view the logs after addition of 1-2 blocks in the block chain, force quit the program *"Ctrl + C"* after 2 minutes of execution. 
+The code runs infinitely as a bitcoin system is supposed to do. Random transactions would keep taking place and the nodes winning hash puzzle will keep on adding blocks to the block chain. To view the logs after addition of 1-2 blocks in the block chain, force quit the program *"Ctrl + C"* after few minutes of execution. 
 
+There would be a `logs/` folder created at run, which will have timestamp based logging. 
+I am using the general `logging` framework, so if you want to add your logs, try adding your own.
+The `Common/LoggingSetup.py` contains the logic for this.
 
 Refer to `REPORT.pdf` for detailed implementation based analysis. 
 Meanwhile one can also refer to the Bitcoin base paper. Where it all started :)
@@ -56,4 +64,4 @@ Meanwhile one can also refer to the Bitcoin base paper. Where it all started :)
 ![](./Output/afterUTXO.png)
 
 ### Transactions Executed
-![](./Output/txnExecuted.png)
+![](./Output/txnExecuted.png =500x)
