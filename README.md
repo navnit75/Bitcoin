@@ -11,7 +11,7 @@ To maintain integrity of the blocks, **Merkle tree** of all the transactions pre
 
 Each node is given 5 wallets i.e. 5 pairs of *<publicKey, privateKey>* to give **Multi-Transaction support.** 
 
-There is a config file *(config.py)* that allows adjusting the hyper-parameters of the Blockchain like number of nodes in the network, arity of Merkle tree, Nonce size, Hash size etc. 
+There is a [`config.py`](Common/config.py) that allows adjusting the hyper-parameters of the Blockchain like number of nodes in the network, arity of Merkle tree, Nonce size, Hash size etc. 
 
 
 Running the Code in Virtual Environment
@@ -33,9 +33,9 @@ The code runs infinitely as a bitcoin system is supposed to do. Random transacti
 
 There would be a `logs/` folder created at run, which will have timestamp based logging. 
 I am using the general `logging` framework, so if you want to add your logs, try adding your own.
-The `Common/LoggingSetup.py` contains the logic for this.
+The [`LoggingSetup.py`](Common/LoggingSetup.py) contains the logic for this.
 
-Refer to `REPORT.pdf` for detailed implementation based analysis. 
+Refer to [`REPORT.pdf`](REPORT.pdf) for detailed implementation based analysis. 
 Meanwhile one can also refer to the Bitcoin base paper. Where it all started :)
 
 
