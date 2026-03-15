@@ -14,7 +14,7 @@ Each node is given 5 wallets i.e. 5 pairs of *<publicKey, privateKey>* to give *
 There is a config file *(config.py)* that allows adjusting the hyper-parameters of the Blockchain like number of nodes in the network, arity of Merkle tree, Nonce size, Hash size etc. 
 
 
-To run the code, type
+Running the Code in Virtual Environment
 ```bash
 python3 -m venv bitcoin-run
 source bitcoin-run/bin/activate
