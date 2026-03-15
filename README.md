@@ -13,7 +13,7 @@ Each node is given 5 wallets i.e. 5 pairs of *<publicKey, privateKey>* to give *
 
 There is a [`config.py`](Common/config.py) that allows adjusting the hyper-parameters of the Blockchain like number of nodes in the network, arity of Merkle tree, Nonce size, Hash size etc. 
 
-
+## Running Commands
 Running the Code in Virtual Environment
 ```bash
 python3 -m venv bitcoin-run
@@ -26,7 +26,7 @@ To deactivate the virtual env
 deactivate
 rm -rf bitcoin-run
 ```
-
+#### *TL;DR*
 It prints out the log of transactions starting from the initial state of each node. All the transactions along with the state of all the nodes is printed upon addition of a new block to the blockchain.
 
 The code runs infinitely as a bitcoin system is supposed to do. Random transactions would keep taking place and the nodes winning hash puzzle will keep on adding blocks to the block chain. To view the logs after addition of 1-2 blocks in the block chain, force quit the program *"Ctrl + C"* after few minutes of execution. 
