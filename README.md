@@ -4,16 +4,6 @@ Initially I was just using this for understanding Bitcoin system as a whole. Som
 1. Refactored the full code based into some simple classes
 2. Added logging mechanism with `__str__` implementation for each class, for easy logging.
 
-
-## ToDo
-```text
-1. Integrate design patterns if any
-2. Write unit tests; I know people don't do that usually on a open source repo but I am old fashioned.
-```
-
-## Questions I am still not able to answer ?
-1. Can we integrate some kind of design patterns if any ? 
-
 ## Summary
 Implementation of bitcoin system with 'n' number of nodes where 'n' is adjustable. There are 'n' independent threads in the system and the network between these nodes is assumed to be fully connected. A node can perform any number of transactions and the node that wins in the **proof-of-work** and satisfies **consensus requirements** finally gets to create a block which is added to the immutable block chain.
 
@@ -51,6 +41,7 @@ Meanwhile one can also refer to the Bitcoin base paper. Where it all started :)
 
 
 ## Output
+
 `Genesis Transaction Creation`
 <!-- ![](./Output/genesis.png) -->
 <img src="./Output/genesis.png" alt="Screenshot" width="600" />
