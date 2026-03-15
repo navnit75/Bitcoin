@@ -13,20 +13,19 @@ Each node is given 5 wallets i.e. 5 pairs of *<publicKey, privateKey>* to give *
 
 There is a config file *(config.py)* that allows adjusting the hyper-parameters of the Blockchain like number of nodes in the network, arity of Merkle tree, Nonce size, Hash size etc. 
 
-For Python 3.10 :-
-```bash
-pip install pycryptodome
-pip install prettytable
-pip install crypto
-pip install datetime 
-```
-
 
 To run the code, type
 ```bash
+python3 -m venv bitcoin-run
+source bitcoin-run/bin/activate
 python3 main.py
 ```
 
+To deactivate the virtual env
+```bash
+deactivate
+rm -rf bitcoin-run
+```
 
 It prints out the log of transactions starting from the initial state of each node. All the transactions along with the state of all the nodes is printed upon addition of a new block to the blockchain.
 
